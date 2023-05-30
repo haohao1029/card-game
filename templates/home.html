@@ -1,0 +1,108 @@
+<!doctype html>
+<title>Hello from Flask</title>
+
+<body>
+  <div class="container">
+    <h1>Card Game</h1>
+    <div id="game" style="align-items: center;">
+      <div id="cards">
+        <h1>Banker</h1>
+        <div style="text-align: center; display: block;
+              margin: 0 auto;
+      ">
+          <img src="{{ url_for('static', filename='images/back001.gif') }}" alt="Card Back" id="banker-card1"
+            style="text-align: center;">
+          <img src="{{ url_for('static', filename='images/back001.gif') }}" alt="Card Back" id="banker-card2"
+            style="text-align: center;">
+
+        </div>
+        <h1>Player</h1>
+        <div style="text-align: center; display: block;
+              margin: 0 auto;
+      ">
+          <img src="{{ url_for('static', filename='images/back001.gif') }}" alt="Card Back" id="player-card1">
+          <img src="{{ url_for('static', filename='images/back001.gif') }}" alt="Card Back" id="player-card2">
+
+        </div>
+      </div>
+      <div id="result">
+        <p id="winner"></p>
+      </div>
+    </div>
+    <div id="buttons">
+      <button id="shuffle-btn" onclick="shuffle()">Shuffle</button>
+      <button id="play-btn" onclick="play()">Play</button>
+    </div>
+
+    <div class="stats">
+      <h1>Stats</h1>
+      <p class="banker_win">
+        0
+      </p>
+      <p class="player_win">
+        0
+      </p>
+      <p class="tie">0</p>
+    </div>
+  </div>
+
+  <script>
+    id = generateRandomId();
+    shuffle();
+
+    async function shuffle() {
+      // Perform shuffle logic here
+      // /shuffle api call fetch
+      res = await fetch('/shuffle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: id
+        })
+      });
+      data = await res.json();
+
+      document.querySelector(".banker_win").innerHTML = data.stats.banker_win;
+      document.querySelector(".player_win").innerHTML = data.stats.player_win;
+      document.querySelector(".tie").innerHTML = data.stats.draw;
+
+      alert ("Shuffled!")
+    }
+
+    // generate random id for player
+    function generateRandomId() {
+      return Math.floor(Math.random() * 1000000000);
+    }
+
+    async function play() {
+      // /assign_cards api call fetch
+
+      // post request to /assign_cards
+      const cards = await fetch('/assign_cards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: id
+        })
+      });
+      data = await cards.json();
+      document.getElementById("banker-card1").src = "/static/images/" + data.banker_cards[0] + ".gif";
+      document.getElementById("banker-card2").src = "/static/images/" + data.banker_cards[1] + ".gif";
+      document.getElementById("player-card1").src = "/static/images/" + data.player_cards[0] + ".gif";
+      document.getElementById("player-card2").src = "/static/images/" + data.player_cards[1] + ".gif";
+      document.getElementById("winner").innerHTML = data.winner;
+      document.querySelector(".banker_win").innerHTML = data.stats.banker_win;
+      document.querySelector(".player_win").innerHTML = data.stats.player_win;
+      document.querySelector(".tie").innerHTML = data.stats.draw;
+      alert(`Banker Value = ${data.banker_value}, Player Value = ${data.player_value} - ${data.winner} wins!`)
+
+    }
+  </script>
+</body>
+
+
+</html>
